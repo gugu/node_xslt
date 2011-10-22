@@ -1,4 +1,3 @@
-
 #include <v8.h>
 #include <libxml/HTMLparser.h>
 #include <libxslt/xslt.h>
@@ -13,6 +12,7 @@
                           _weak_handle.MakeWeak(NULL, d);
 
 using namespace v8;
+
 
 void jsXmlDocCleanup(Persistent<Value> value, void *) {
     HandleScope handlescope;
@@ -43,10 +43,13 @@ OBJECT(jsXsltStylesheet, 1, xsltStylesheetPtr style)
 END
 
 FUNCTION(readXmlString)
-    ARG_COUNT(1)
-    ARG_utf8(str, 0)
+    if ( args.Length() < 1 || args.Length() > 2 ) {
+        return ThrowException(String::New("Usage: readXmlString(string[, params])"));
+    };
+    ARG_utf8(str, 0);
+    ARG_int(params, 1);
 
-    xmlDocPtr doc = xmlReadMemory(*str, str.length(), NULL, "UTF-8", 0);
+    xmlDocPtr doc = xmlReadMemory(*str, str.length(), NULL, "UTF-8", params);
     if (!doc) {
         return JS_ERROR("Failed to parse XML");
     }
@@ -54,10 +57,13 @@ FUNCTION(readXmlString)
 END
 
 FUNCTION(readHtmlString)
-    ARG_COUNT(1)
-    ARG_utf8(str, 0)
+    if ( args.Length() < 1 || args.Length() > 2 ) {
+        return ThrowException(String::New("Usage: readHtmlString(string[, params])"));
+    };
+    ARG_utf8(str, 0);
+    ARG_int(params, 1);
 
-    htmlDocPtr doc = htmlReadMemory(*str, str.length(), NULL, "UTF-8", HTML_PARSE_RECOVER);
+    htmlDocPtr doc = htmlReadMemory(*str, str.length(), NULL, "UTF-8", params);
     if (!doc) {
         return JS_ERROR("Failed to parse HTML");
     }
@@ -65,12 +71,16 @@ FUNCTION(readHtmlString)
 END
 
 FUNCTION(readXsltString)
-    ARG_COUNT(1)
-    ARG_utf8(str, 0)
+    if ( args.Length() < 1 || args.Length() > 2 ) {
+        return ThrowException(String::New("Usage: readXmlString(string[, params])"));
+    };
+    ARG_utf8(str, 0);
+    ARG_int(params, 1);
 
-    xmlDocPtr doc = xmlReadMemory(*str, str.length(), NULL, "UTF-8", 0);
+    xmlDocPtr doc = xmlReadMemory(*str, str.length(), NULL, "UTF-8", params);
     if (!doc) {
-        return JS_ERROR("Failed to parse XML");
+        xmlErrorPtr error = xmlGetLastError();
+        return JS_ERROR(error->message);
     }
     ScopeGuard guard =  MakeGuard(xmlFreeDoc, doc);
 
@@ -90,7 +100,9 @@ void freeArray(char **array, int size) {
 }
 
 FUNCTION(transform)
-    ARG_COUNT(3)
+    if ( args.Length() < 2 || args.Length() > 3 ) {
+        return ThrowException(String::New("Usage: transform(stylesheet, document[, params])"));
+    };
     ARG_obj(objStylesheet, 0)
     ARG_obj(objDocument, 1)
     ARG_array(array, 2)

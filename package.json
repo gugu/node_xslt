@@ -7,6 +7,9 @@
     },
     "dependencies": {
     },
+    "scripts": {
+        "test" : "node test.js"
+    },
     "description": "A simple XSLT package for node.js",
     "author": "Brian Suh <brian.j.suh@gmail.com>",
     "homepage": "https://github.com/bahblah/node_xslt",
