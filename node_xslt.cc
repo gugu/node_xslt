@@ -135,7 +135,7 @@ FUNCTION(transform)
     try {
         xmlDocPtr result = xsltApplyStylesheet(stylesheet, document, (const char **)params);
         if (!result) {
-            throw JS_ERROR("Failed to apply stylesheet");
+            return JS_ERROR("Failed to apply stylesheet");
         }
         ON_BLOCK_EXIT(xmlFreeDoc, result);
 
